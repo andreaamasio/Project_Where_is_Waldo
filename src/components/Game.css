@@ -1,0 +1,63 @@
+.game-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.image-wrapper {
+  position: relative; /* For absolute positioning of the menu */
+  width: 80vw; /* Set the width of the image wrapper to 80% of the viewport width */
+  max-width: 1200px; /* Optional: Set a maximum width for very large screens */
+}
+
+.game-image {
+  display: block; /* Prevents extra space below the image */
+  width: 100%; /* Make the image take up the full width of its container */
+  height: auto; /* Maintain aspect ratio */
+  cursor: crosshair;
+  user-select: none;
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.character-menu {
+  position: absolute;
+
+  background-color: white;
+  border: 1px solid black;
+  padding: 10px;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.character-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.character-menu-item {
+  cursor: pointer;
+  padding: 5px 10px;
+  white-space: nowrap;
+}
+
+.character-menu-item:hover {
+  background-color: #f0f0f0;
+}
+.character-menu-item.disabled {
+  color: #aaa;
+  cursor: not-allowed;
+}
+.character-menu-item img {
+  width: 30px;
+  height: 30px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+/* .choose-menu-list {
+  display: none;
+} */

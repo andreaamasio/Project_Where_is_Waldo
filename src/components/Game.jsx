@@ -1,43 +1,122 @@
-import { use, useState } from "react"
-
-//import "./App.css"
+import React, { useRef, useState, useEffect } from "react"
+import "./Game.css"
 
 function Game() {
   const [clickPosition, setClickPosition] = useState(null)
   const [menuVisible, setMenuVisible] = useState(false)
   const [selectedCharacter, setSelectedCharacter] = useState(null)
-  const [foundCharacters, setFoundCharacters] = useState({}) //stored as {waldo:true, odlaw:false etc...}
-  const [imageDetails, setImageDetails] = useState(null)
-  //const imageRef = useRef(null)
-  const characterNames = ["Waldo", "Odlaw", "Wizard"]
-  const handleImageClick = (event) => {
-    if (!imageDetails) return
+  const [foundCharacters, setFoundCharacters] = useState([])
+  const imageRef = useRef(null)
+  const characterNames = [
+    { name: "Waldo", img: "/pictures/waldo-drop.jpg" },
+    { name: "Odlaw", img: "/pictures/odlaw-drop.jpg" },
+    { name: "Wizard", img: "/pictures/wizard-drop.jpeg" },
+  ]
 
-    const rect = imageRef.current.getBoundingClientRect()
+  const handleImageClick = (event) => {
+    const imageElement = imageRef.current
+    if (!imageElement) return
+
+    const rect = imageElement.getBoundingClientRect()
     const x = event.clientX - rect.left
     const y = event.clientY - rect.top
 
-    // Normalize coordinates based on image dimensions
-    const normalizedX = x / imageDetails.width
-    const normalizedY = y / imageDetails.height
+    const normalizedX = x / rect.width
+    const normalizedY = y / rect.height
 
     setClickPosition({ x: normalizedX, y: normalizedY })
     setMenuVisible(true)
   }
+
+  const handleCharacterSelect = (character) => {
+    if (!foundCharacters.includes(character)) {
+      setSelectedCharacter(character)
+      setFoundCharacters((prev) => [...prev, character])
+      setMenuVisible(false)
+      console.log(`Character ${character} selected at:`, clickPosition)
+    }
+  }
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (
+        menuVisible &&
+        !event.target.closest(".character-menu") &&
+        event.target !== imageRef.current
+      ) {
+        setMenuVisible(false)
+        setClickPosition(null)
+      }
+    }
+    document.addEventListener("mousedown", handleOutsideClick)
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick)
+    }
+  }, [menuVisible, imageRef])
+
+  const getMenuStyle = () => {
+    if (!clickPosition) return { display: "none" }
+    const imageElement = imageRef.current
+    if (!imageElement) return { display: "none" }
+    const xPos = clickPosition.x * imageElement.offsetWidth
+    const yPos = clickPosition.y * imageElement.offsetHeight
+
+    return {
+      position: "absolute",
+      left: `${xPos}px`,
+      top: `${yPos}px`,
+
+      backgroundColor: "white",
+      border: "1px solid black",
+      padding: "10px",
+      zIndex: 10,
+    }
+  }
+
   return (
-    <>
-      <img
-        src="public/pictures/level-1-waldo-odlaw-wizard.jpg"
-        alt="game-picture"
-      />
-      <div>
-        <ul className="choose-menu-list">
-          {characterNames.map((character) => {
-            return <li key={character}>{character}</li>
-          })}
-        </ul>
+    <div className="game-container">
+      <div className="image-wrapper">
+        <img
+          ref={imageRef}
+          src="/pictures/level-1-waldo-odlaw-wizard.jpg"
+          alt="game-picture"
+          onClick={handleImageClick}
+          className="game-image"
+        />
+        {menuVisible &&
+          clickPosition && ( // Ensure clickPosition is also truthy
+            <div className="character-menu" style={getMenuStyle()}>
+              <ul className="choose-menu-list">
+                {characterNames.map((character) => {
+                  const isFound = foundCharacters.includes(character.name)
+                  return (
+                    <li
+                      key={character.name}
+                      onClick={() =>
+                        !isFound && handleCharacterSelect(character.name)
+                      }
+                      className={`character-menu-item ${
+                        isFound ? "disabled" : ""
+                      }`}
+                      style={{
+                        pointerEvents: isFound ? "none" : "auto",
+                        opacity: isFound ? 0.6 : 1,
+                      }}
+                    >
+                      <img
+                        src={character.img}
+                        alt={`${character.name} avatar`}
+                      />
+                      {character.name}{" "}
+                      {isFound && <span style={{ marginLeft: "8px" }}>✅</span>}
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          )}
       </div>
-    </>
+    </div>
   )
 }
 
