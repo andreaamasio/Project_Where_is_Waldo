@@ -1,0 +1,9 @@
+.nav-list {
+  display: flex;
+  list-style: none;
+  align-items: center;
+  justify-content: space-around;
+}
+.Waldo-avatar {
+  max-width: 78px;
+}
