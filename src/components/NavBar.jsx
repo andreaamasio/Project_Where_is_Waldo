@@ -1,5 +1,3 @@
-import { useState } from "react"
-
 import "./NavBar.css"
 
 function NavBar() {
@@ -8,7 +6,7 @@ function NavBar() {
       <ul className="nav-list">
         <li>
           <img
-            src="public/pictures/waldo-avatar.jpg"
+            src="/pictures/waldo-avatar.jpg"
             alt="Waldo-avatar"
             className="Waldo-avatar"
           />
@@ -18,7 +16,7 @@ function NavBar() {
         </li>
         <li>
           <a href="https://github.com/andreaamasio">
-            <img src="public/pictures/github-60.svg" alt="Github-link" />
+            <img src="/pictures/github-60.svg" alt="Github-link" />
           </a>
         </li>
       </ul>

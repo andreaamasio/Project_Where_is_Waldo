@@ -1,0 +1,41 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Character {
+  id        Int    @id @default(autoincrement())
+  name      String @unique
+  level     Int // To associate characters with different puzzle levels
+  locations Json[] // Array of JSON objects storing normalized coordinates for different image sizes/aspect ratios
+  // Example of a location object in JSON:
+  // { "minX": 0.2, "maxX": 0.25, "minY": 0.3, "maxY": 0.35 }
+}
+
+model AnonymousUser {
+  id      String   @id @default(uuid()) // Unique identifier for anonymous users
+  results Result[]
+}
+
+model Result {
+  id              Int            @id @default(autoincrement())
+  anonymousUserId String?        @map("anonymous_user_id")
+  anonymousUser   AnonymousUser? @relation(fields: [anonymousUserId], references: [id], onDelete: SetNull)
+  level           Int
+  completionTime  Int // Time in seconds or milliseconds
+  playerName      String? // Optional name entered by the user
+  completedAt     DateTime       @default(now())
+
+  @@index([anonymousUserId])
+}
