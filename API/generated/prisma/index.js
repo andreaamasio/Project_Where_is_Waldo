@@ -173,11 +173,12 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
         "fromEnvVar": "DATABASE_URL",
-        "value": "postgresql://neondb_owner:npg_9DlJbOdeAz4i@ep-floral-butterfly-abs8pmup-pooler.eu-west-2.aws.neon.tech/waldo?sslmode=require"
+        "value": null
       }
     }
   },
