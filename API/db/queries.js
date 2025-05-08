@@ -2,16 +2,21 @@ const { PrismaClient } = require("@prisma/client")
 const prisma = new PrismaClient()
 async function createUser(playerName, completionTime, level) {
   try {
-    const newUser = await prisma.result.create({
+    const anonymousUser = await prisma.anonymousUser.create({
+      data: {},
+    })
+
+    const newResult = await prisma.result.create({
       data: {
         playerName,
         completionTime,
         level,
+        anonymousUserId: anonymousUser.id,
       },
     })
 
     console.log(`User successfully created: ${playerName}`)
-    return newUser
+    return newResult
   } catch (error) {
     console.error(`Error creating new user (${playerName}):`, error)
     throw error
