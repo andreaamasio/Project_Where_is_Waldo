@@ -5,5 +5,11 @@
   justify-content: space-around;
 }
 .Waldo-avatar {
-  max-width: 78px;
+  max-width: 50px;
+}
+.nav-list img {
+  max-width: 50px;
+}
+h1 {
+  font-size: 1.4rem;
 }
