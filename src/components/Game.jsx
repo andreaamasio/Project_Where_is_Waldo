@@ -6,12 +6,34 @@ function Game() {
   const [menuVisible, setMenuVisible] = useState(false)
   const [selectedCharacter, setSelectedCharacter] = useState(null)
   const [foundCharacters, setFoundCharacters] = useState([])
+  const [locations, setLocations] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const imageRef = useRef(null)
   const characterNames = [
     { name: "Waldo", img: "/pictures/waldo-drop.jpg" },
     { name: "Odlaw", img: "/pictures/odlaw-drop.jpg" },
     { name: "Wizard", img: "/pictures/wizard-drop.jpeg" },
   ]
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/game/1")
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        const json = await response.json()
+        console.log("Fetched locations:", json.data)
+        setLocations(json.data)
+        setLoading(false)
+      } catch (err) {
+        setError(err.message)
+        setLoading(false)
+      }
+    }
+
+    fetchLocations()
+  }, [])
 
   const handleImageClick = (event) => {
     const imageElement = imageRef.current
@@ -95,44 +117,31 @@ function Game() {
     }
   }
   //Backend communication
-  const checkCharacterLocation = async (character, coordinates) => {
-    // TODO: Implement your API call to the backend to validate the coordinates
-    // against the database for the selected character.
-    // This is a simulation for now.
-    await new Promise((resolve) => setTimeout(resolve, 500)) // Simulate network delay
+  const checkCharacterLocation = (character, coordinates) => {
+    // Find the character object from the backend data
+    const target = locations.find(
+      (loc) => loc.name.toLowerCase() === character.toLowerCase()
+    )
 
-    // Example logic (replace with your actual backend validation)
-    const tolerance = 0.05 // Adjust as needed
-    switch (character.toLowerCase()) {
-      case "waldo":
-        return (
-          coordinates.x > 0.2 &&
-          coordinates.x < 0.25 &&
-          coordinates.y > 0.3 &&
-          coordinates.y < 0.35
-        )
-      case "odlaw":
-        return (
-          coordinates.x > 0.7 &&
-          coordinates.x < 0.75 &&
-          coordinates.y > 0.6 &&
-          coordinates.y < 0.65
-        )
-      case "wizard":
-        return (
-          coordinates.x > 0.5 &&
-          coordinates.x < 0.55 &&
-          coordinates.y > 0.1 &&
-          coordinates.y < 0.15
-        )
-      default:
-        return false
+    if (!target || !target.locations || target.locations.length === 0) {
+      console.error(
+        `Character ${character} not found or missing location data.`
+      )
+      return false
     }
+
+    // Assume we only have one bounding box (first item)
+    const box = target.locations[0]
+
+    const withinX = coordinates.x >= box.minX && coordinates.x <= box.maxX
+    const withinY = coordinates.y >= box.minY && coordinates.y <= box.maxY
+
+    return withinX && withinY
   }
 
-  const allFound =
-    Object.keys(foundCharacters).length === characterNames.length &&
-    Object.values(foundCharacters).every(Boolean)
+  const allFound = characterNames.every(
+    (c) => foundCharacters[c.name.toLowerCase()] === true
+  )
 
   useEffect(() => {
     if (allFound) {
@@ -143,43 +152,55 @@ function Game() {
   }, [allFound, characterNames.length, foundCharacters])
   return (
     <div className="game-container">
-      <div className="image-wrapper">
-        <img
-          ref={imageRef}
-          src="/pictures/level-1-waldo-odlaw-wizard.jpg"
-          alt="game-picture"
-          onClick={handleImageClick}
-          className="game-image"
-        />
-        {menuVisible && clickPosition && (
-          <div className="character-menu" style={getMenuStyle()}>
-            <ul className="choose-menu-list">
-              {characterNames.map((character) => {
-                const isFound = foundCharacters.includes(character.name)
-                return (
-                  <li
-                    key={character.name}
-                    onClick={() =>
-                      !isFound && handleCharacterSelect(character.name)
-                    }
-                    className={`character-menu-item ${
-                      isFound ? "disabled" : ""
-                    }`}
-                    style={{
-                      pointerEvents: isFound ? "none" : "auto",
-                      opacity: isFound ? 0.6 : 1,
-                    }}
-                  >
-                    <img src={character.img} alt={`${character.name} avatar`} />
-                    {character.name}{" "}
-                    {isFound && <span style={{ marginLeft: "8px" }}>✅</span>}
-                  </li>
-                )
-              })}
-            </ul>
+      {loading && <div>Loading locations...</div>}
+      {error && <div>Error: {error}</div>}
+      {!loading && !error && (
+        <>
+          <div className="image-wrapper">
+            <img
+              ref={imageRef}
+              src="/pictures/level-1-waldo-odlaw-wizard.jpg"
+              alt="game-picture"
+              onClick={handleImageClick}
+              className="game-image"
+            />
+            {menuVisible && clickPosition && (
+              <div className="character-menu" style={getMenuStyle()}>
+                <ul className="choose-menu-list">
+                  {characterNames.map((character) => {
+                    const isFound =
+                      foundCharacters[character.name.toLowerCase()] === true
+                    return (
+                      <li
+                        key={character.name}
+                        onClick={() =>
+                          !isFound && handleCharacterSelect(character.name)
+                        }
+                        className={`character-menu-item ${
+                          isFound ? "disabled" : ""
+                        }`}
+                        style={{
+                          pointerEvents: isFound ? "none" : "auto",
+                          opacity: isFound ? 0.6 : 1,
+                        }}
+                      >
+                        <img
+                          src={character.img}
+                          alt={`${character.name} avatar`}
+                        />
+                        {character.name}{" "}
+                        {isFound && (
+                          <span style={{ marginLeft: "8px" }}>✅</span>
+                        )}
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   )
 }
