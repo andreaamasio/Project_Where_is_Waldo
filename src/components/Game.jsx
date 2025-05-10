@@ -15,11 +15,31 @@ function Game() {
   const timerRef = useRef(null)
   const [playerName, setPlayerName] = useState("")
   const [showSubmit, setShowSubmit] = useState(false)
+  const [showResult, setShowResult] = useState(false)
+  const [showGame, setShowGame] = useState(true)
+  const [results, setResults] = useState([])
   const characterNames = [
     { name: "Waldo", img: "/pictures/waldo-drop.jpg" },
     { name: "Odlaw", img: "/pictures/odlaw-drop.jpg" },
     { name: "Wizard", img: "/pictures/wizard-drop.jpeg" },
   ]
+  const fetchResults = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/result")
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const json = await response.json()
+      console.log("Fetched results:", json.data)
+      setResults(json.data)
+      setLoading(false)
+      setShowSubmit(false)
+    } catch (err) {
+      setError(err.message)
+      setLoading(false)
+      setShowSubmit(false)
+    }
+  }
   useEffect(() => {
     const fetchLocations = async () => {
       try {
@@ -94,7 +114,11 @@ function Game() {
       document.removeEventListener("mousedown", handleOutsideClick)
     }
   }, [menuVisible, imageRef])
-
+  useEffect(() => {
+    if (showResult) {
+      fetchResults()
+    }
+  }, [showResult])
   const getMenuStyle = () => {
     if (!clickPosition) return { display: "none" }
     const imageElement = imageRef.current
@@ -140,14 +164,37 @@ function Game() {
     (c) => foundCharacters[c.name.toLowerCase()] === true
   )
   useEffect(() => {
-    setStartTime(Date.now())
+    if (showGame) {
+      setStartTime(Date.now())
+    }
+  }, [showGame])
+  useEffect(() => {
+    if (startTime) {
+      timerRef.current = setInterval(() => {
+        setElapsedTime(Date.now() - startTime)
+      }, 1000)
 
-    timerRef.current = setInterval(() => {
-      setElapsedTime(Date.now() - startTime)
-    }, 1000) // update every second
-
-    return () => clearInterval(timerRef.current) // cleanup if unmounted
+      return () => clearInterval(timerRef.current)
+    }
   }, [startTime])
+  const handleGoBack = () => {
+    setShowResult(false)
+    setShowGame(true)
+    setFoundCharacters({
+      waldo: false,
+      odlaw: false,
+      wizard: false,
+    })
+    setElapsedTime(0)
+    const newStart = Date.now()
+    setStartTime(newStart)
+    clearInterval(timerRef.current)
+    timerRef.current = setInterval(() => {
+      setElapsedTime(Date.now() - newStart)
+    }, 1000)
+    setPlayerName("")
+    setShowSubmit(false)
+  }
   useEffect(() => {
     if (allFound) {
       clearInterval(timerRef.current)
@@ -183,8 +230,10 @@ function Game() {
         throw new Error("Failed to submit score")
       }
 
-      alert("Score submitted successfully!")
+      //alert("Score submitted successfully!")
       // Optionally, reset the game or redirect
+      setShowResult(true)
+      setShowGame(false)
     } catch (err) {
       console.error(err)
       alert("Error submitting score")
@@ -201,35 +250,43 @@ function Game() {
               Time: {Math.floor(elapsedTime / 1000)} seconds
             </div>
 
-            <div className="character-tracker">
-              {characterNames.map((character) => {
-                const isFound =
-                  foundCharacters[character.name.toLowerCase()] === true
-                return (
-                  <div key={character.name} className="character-tracker-item">
-                    <img
-                      src={character.img}
-                      alt={`${character.name} avatar`}
-                      title={character.name}
-                    />
-                    <div className="character-checkbox">
-                      {isFound ? "✅" : "⬜"}
+            <div className="character-tracker-wrapper">
+              <span className="find-them">Find them all:</span>
+              <div className="character-tracker">
+                {characterNames.map((character) => {
+                  const isFound =
+                    foundCharacters[character.name.toLowerCase()] === true
+                  return (
+                    <div
+                      key={character.name}
+                      className="character-tracker-item"
+                    >
+                      <img
+                        src={character.img}
+                        alt={`${character.name} avatar`}
+                        title={character.name}
+                      />
+                      <div className="character-checkbox">
+                        {isFound ? "✅" : "⬜"}
+                      </div>
                     </div>
-                  </div>
-                )
-              })}
+                  )
+                })}
+              </div>
             </div>
           </div>
           {feedbackMessage && (
             <div className="feedback-message">{feedbackMessage}</div>
           )}
-          <img
-            ref={imageRef}
-            src="/pictures/level-1-waldo-odlaw-wizard.jpg"
-            alt="game-picture"
-            onClick={handleImageClick}
-            className="game-image"
-          />
+          {showGame && (
+            <img
+              ref={imageRef}
+              src="/pictures/level-1-waldo-odlaw-wizard.jpg"
+              alt="game-picture"
+              onClick={handleImageClick}
+              className="game-image"
+            />
+          )}
 
           {menuVisible && clickPosition && (
             <div className="character-menu" style={getMenuStyle()}>
@@ -280,6 +337,32 @@ function Game() {
                 <br />
                 <button onClick={handleSubmitScore}>Submit Score</button>
               </div>
+            </div>
+          )}
+          {showResult && (
+            <div className="results-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Level</th>
+                    <th>Completion Time</th>
+                    <th>Player Name</th>
+                    <th>Completed At</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {results.map((result) => (
+                    <tr key={result.id}>
+                      <td>{result.level}</td>
+                      <td>{result.completionTime} s</td>
+                      <td>{result.playerName}</td>
+                      <td>{new Date(result.completedAt).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <br />
+              <button onClick={handleGoBack}>Go Back</button>
             </div>
           )}
         </div>

@@ -38,4 +38,15 @@ async function getLocationsByLevel(level) {
     throw error
   }
 }
-module.exports = { createUser, getLocationsByLevel }
+async function getResults() {
+  try {
+    const results = await prisma.result.findMany()
+
+    console.log(`Results: ${results}`)
+    return results
+  } catch (error) {
+    console.error(`Error finding results with prisma`, error)
+    throw error
+  }
+}
+module.exports = { createUser, getLocationsByLevel, getResults }

@@ -7,7 +7,7 @@
 
 .image-wrapper {
   position: relative; /* For absolute positioning of the menu */
-  width: 80vw; /* Set the width of the image wrapper to 80% of the viewport width */
+  width: 90vw; /* Set the width of the image wrapper to 80% of the viewport width */
   max-width: 1200px; /* Optional: Set a maximum width for very large screens */
 }
 
@@ -67,7 +67,7 @@
   align-items: center;
   width: 80vw;
   max-width: 1200px;
-  margin-bottom: 16px;
+  margin-bottom: 5px;
 }
 
 .timer {
@@ -92,7 +92,7 @@
   width: 40px;
   height: 40px;
   border-radius: 4px;
-  margin-bottom: 4px;
+  margin-bottom: 0px;
 }
 
 .character-checkbox {
@@ -187,4 +187,50 @@
   100% {
     opacity: 0;
   }
+}
+/* Result style */
+.results-container {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  max-width: 600px;
+  margin: 20px auto;
+}
+
+.results-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.results-container th,
+.results-container td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.results-container th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+
+.results-container tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.results-container button {
+  margin-top: 16px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.character-tracker-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+span.find-them {
+  font-weight: bold;
+  font-size: 1.4rem;
 }
