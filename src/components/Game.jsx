@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from "react"
 import "./Game.css"
 
 function Game() {
+  const API = "https://project-where-is-waldo.onrender.com"
   const [clickPosition, setClickPosition] = useState(null)
   const [menuVisible, setMenuVisible] = useState(false)
   const [feedbackMessage, setFeedbackMessage] = useState("")
@@ -25,7 +26,7 @@ function Game() {
   ]
   const fetchResults = async () => {
     try {
-      const response = await fetch("http://localhost:3000/result")
+      const response = await fetch(`${API}/result`)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -43,7 +44,7 @@ function Game() {
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const response = await fetch("http://localhost:3000/game/1")
+        const response = await fetch(`${API}/game/1`)
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
         }
@@ -218,7 +219,7 @@ function Game() {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/user", {
+      const response = await fetch(`${API}/user`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
